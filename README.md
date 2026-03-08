@@ -1,117 +1,101 @@
-🌞 SolarMotion Tracker & Modeler
+# 🌞 SolarMotion Tracker & Modeler
 
-Contexto General para el Agente de Codificación (AI Developer Context)
+Aplicación web Full-Stack diseñada para modelar matemáticamente el movimiento aparente del sol y la intensidad de la luz natural a lo largo del día.
 
-🎯 Objetivo del Proyecto
+## 🎯 Objetivo del Proyecto
 
-Desarrollar una aplicación web Full-Stack (Frontend, Backend, Base de Datos) que permita modelar matemáticamente el movimiento aparente del sol y la intensidad de la luz natural a lo largo del día.
+El sistema procesa datos empíricos recolectados por usuarios mediante dos experimentos físicos distintos (Intensidad Lumínica y Longitud de Sombra). Utiliza análisis numérico (Mínimos Cuadrados y Eliminación de Gauss) para encontrar la curva que mejor se ajuste, y aplica cálculo diferencial para hallar la velocidad de los cambios observados (ej. rapidez de crecimiento de la sombra). 
 
-El sistema procesará datos empíricos recolectados por usuarios mediante dos experimentos físicos distintos, utilizará análisis numérico (Mínimos Cuadrados y Eliminación de Gauss) para encontrar la curva que mejor se ajuste, y aplicará cálculo diferencial para hallar la velocidad de los cambios observados.
+Además, la plataforma incluye un **Laboratorio de Machine Learning (ML)** desarrollado desde cero, permitiendo a los usuarios entrenar, validar y comparar diversos algoritmos de regresión.
 
-🔬 Experimentos y Modelos Físicos a Soportar
+## 🏗️ Arquitectura y Patrones de Diseño
 
-La aplicación debe manejar dos modos de experimentación. El usuario podrá alternar entre ellos en la interfaz:
+El proyecto cuenta con una arquitectura desacoplada y fuertemente tipada:
 
-Modo 1: Intensidad Lumínica (Luxómetro)
+*   **Frontend (Cliente):** 
+    *   **React 19 + Vite:** SPA (Single Page Application) rápida y moderna.
+    *   **Tailwind CSS v4:** Sistema de diseño responsivo basado en clases utilitarias, implementando "Glassmorphism" y un esquema de colores "Solar".
+    *   **Recharts:** Visualización interactiva de gráficas matemáticas (Scatter, Line, Bar, Composed).
+    *   **React Router:** Enrutamiento del lado del cliente (`/predictions`, `/lab`).
 
-Variable Independiente (X): Tiempo (Horas del día, ej. 7.0, 8.5, 12.0).
+*   **Backend (Servidor):**
+    *   **Node.js + Express + TypeScript:** API RESTful robusta y tipada.
+    *   **Motor Matemático Nativo:** Implementación desde cero de álgebra lineal (Eliminación de Gauss con pivoteo parcial) sin depender de librerías externas pesadas.
+    *   **Patrón Strategy & Registry:** El módulo de Machine Learning (Lab) utiliza el patrón Strategy para definir un contrato común (`TrainableModel`) que es implementado por distintos algoritmos (Linear, Polynomial, Decision Tree, SVM, KNN). El patrón Singleton/Registry orquesta la inyección y disponibilidad de estos modelos.
+    *   **Arquitectura en Capas:** Controladores (Controllers) -> Servicios de Negocio (Services) -> Acceso a Datos (Prisma Models).
 
-Variable Dependiente (Y): Intensidad de luz (Lux).
+*   **Base de Datos:**
+    *   **SQLite:** Base de datos relacional ligera, ideal para desarrollo y fácil portabilidad de los experimentos guardados.
+    *   **Prisma ORM:** Mapeo objeto-relacional tipado para asegurar la integridad de la base de datos y facilitar migraciones.
 
-Comportamiento Esperado: Una curva en forma de campana (parábola invertida), con su pico máximo cerca del mediodía solar.
+## ✨ Principales Features
 
-Modo 2: Rastreo de Sombras y Velocidad (Gnomon)
+### 1. 📊 Predicciones (Modelado Físico)
+*   **Modo Luz:** Modela la intensidad de luz (curva convexa).
+*   **Modo Sombra:** Modela la longitud de sombra proyectada por un gnomon (curva cóncava) y genera automáticamente un gráfico secundario con la **primera derivada** (velocidad de cambio de la sombra).
+*   **Ajuste Dinámico:** Slider para elegir el grado del polinomio (1 al 6) ajustando la regresión por Mínimos Cuadrados en tiempo real.
+*   **Historial y Exportación:** Panel para guardar experimentos en la base de datos, cargarlos posteriormente y opción de impresión/exportación a PDF optimizada.
 
-Contexto: Se utiliza un "Gnomon" (un palo recto clavado perpendicularmente al suelo). A medida que el sol se mueve, la longitud de la sombra cambia.
+### 2. 🧪 Laboratorio ML (Observabilidad y Entrenamiento)
+*   **Algoritmos Nativos:** Modelos construidos internamente para propósitos educativos y de control absoluto:
+    *   Regresión Lineal (OLS)
+    *   Regresión Polinomial (Least Squares)
+    *   Árboles de Decisión (CART - Decision Tree Regressor)
+    *   Máquinas de Vectores de Soporte (SVR Linear & RBF)
+    *   K-Vecinos Más Cercanos (KNN Regressor)
+*   **Hiperparámetros Configurables:** Cada modelo expone sus hiperparámetros (ej. `maxDepth` en Árboles, `C` en SVM, `k` en KNN) ajustables mediante UI.
+*   **Métricas Estándar:** Evaluación automática de R², MSE (Error Cuadrático Medio), MAE y RMSE.
+*   **Panel de Comparación:** Permite seleccionar múltiples modelos simultáneamente, entrenarlos con el mismo dataset y obtener un Leaderboard comparativo de su precisión (R²) y errores (MSE).
 
-Variable Independiente (X): Tiempo (Horas del día).
+## 🚀 Paso a Paso para la Ejecución Local
 
-Variable Dependiente (Y): Longitud de la sombra (cm o metros).
+Para ejecutar el proyecto en tu máquina local, asegúrate de tener instalado **Node.js** (v18+) y seguir estos pasos:
 
-Comportamiento Esperado: Una curva en forma de "U" (parábola normal), donde las sombras son más largas al amanecer/atardecer y más cortas al mediodía.
+### 1. Clonar e inicializar dependencias
 
-Cálculo Adicional (Velocidad): Para modelar la "velocidad" del movimiento de la sombra (que es un reflejo de la velocidad angular del sol), el sistema debe derivar matemáticamente el polinomio resultante de la longitud de la sombra ($Y'$).
+El proyecto está dividido en dos directorios principales: `client/` y `server/`.
+Deberás inicializar ambos de forma independiente.
 
-🛠️ Stack Tecnológico Requerido
+**Terminal 1 (Backend):**
+```bash
+cd server
+npm install
+```
 
-El agente de codificación debe apegarse a las siguientes tecnologías:
+**Terminal 2 (Frontend):**
+```bash
+cd client
+npm install
+```
 
-Frontend: React.js, Tailwind CSS (para diseño rápido y responsivo), Recharts (para las gráficas interactivas).
+### 2. Configurar Base de Datos (Backend)
 
-Backend: Node.js con Express.js (API RESTful).
+La base de datos SQLite se creará automáticamente cuando corras las migraciones de Prisma.
 
-Base de Datos: PostgreSQL (Relacional) o MongoDB (NoSQL) - El agente debe elegir la más óptima según su configuración de entorno, preferiblemente PostgreSQL.
+**En la Terminal del Backend (`server/`):**
+```bash
+npx prisma generate
+npx prisma migrate dev --name init
+```
+Esto creará el archivo `dev.db` dentro de la carpeta `server/prisma/` y preparará el ORM.
 
-Lógica Matemática: JavaScript/TypeScript puro en el Backend (sin librerías matemáticas externas pesadas para las regresiones, implementar los algoritmos desde cero para control total).
+### 3. Iniciar los Servidores de Desarrollo
 
-📋 Features Descriptivos para el Agente (Implementation Guide)
+Es necesario correr ambos servidores simultáneamente.
 
-A continuación, se describen las funcionalidades (features) con el nivel de detalle técnico necesario para que el agente inicie la codificación:
+**En la Terminal del Backend (`server/`):**
+```bash
+npm run dev
+```
+*(El servidor de la API correrá por defecto en `http://localhost:3001`)*
 
-Feature 1: Interfaz de Entrada de Datos Dual (UI)
+**En la Terminal del Frontend (`client/`):**
+```bash
+npm run dev
+```
+*(El servidor web de Vite correrá normalmente en `http://localhost:5173`)*
 
-Toggle de Experimento: Un switch o pestañas (Tabs) en el frontend para seleccionar entre "Experimento de Luz" y "Experimento de Sombra".
+Abre tu navegador y navega a `http://localhost:5173` para comenzar a usar **SolarMotion**.
 
-Tabla de Datos Dinámica: Un formulario en formato de tabla donde el usuario pueda agregar $N$ filas.
-
-Columnas para Modo 1: Hora (X), Intensidad Lux (Y).
-
-Columnas para Modo 2: Hora (X), Longitud de Sombra (Y).
-
-Selector de Grado: Un slider numérico (rango 1 a 6) para seleccionar el grado ($n$) del polinomio de regresión.
-
-Feature 2: Motor Matemático (Backend API)
-
-Endpoint de Procesamiento: Un endpoint POST /api/model/calculate que reciba un array de puntos [{x, y}], el grado n y el tipo de experimento.
-
-Algoritmo de Regresión Polinomial (Mínimos Cuadrados): Construir la matriz de sumatorias de las potencias de $X$ y el vector de sumatorias de $X^k \cdot Y$.
-
-Resolución de Sistemas de Ecuaciones: Implementar el algoritmo de Eliminación de Gauss (con pivoteo parcial para evitar división por cero) que resuelva la matriz anterior y retorne el array de coeficientes $[a_0, a_1, a_2, ..., a_n]$.
-
-Ecuación Generada: $Y(x) = a_0 + a_1x + a_2x^2 + ... + a_nx^n$.
-
-Cálculo de Errores: Implementar funciones para calcular el $MSE$ (Error Cuadrático Medio) y el $R^2$ (Coeficiente de Determinación).
-
-Feature 3: Módulo de Cálculo de Velocidad (Derivadas)
-
-Lógica de Derivación: Si el tipo de experimento es "Sombra", el motor debe tomar el array de coeficientes de posición y aplicar la regla de la potencia para obtener la ecuación de la velocidad (derivada primera).
-
-Fórmula: Si $Y(x) = a_0 + a_1x + a_2x^2 + a_3x^3$, entonces la velocidad $V(x) = Y'(x) = a_1 + 2a_2x + 3a_3x^2$.
-
-Retorno: El endpoint debe devolver los coeficientes de la ecuación de velocidad y un array de puntos evaluados para poder graficarlos.
-
-Feature 4: Visualización Gráfica Avanzada (Recharts)
-
-Gráfica Principal (Posición/Luz vs Tiempo): * Eje X: Tiempo. Eje Y: Lux o Longitud.
-
-Mostrar los puntos experimentales introducidos por el usuario como puntos dispersos (Scatter).
-
-Trazar una línea continua suave que represente el polinomio generado evaluado en intervalos pequeños (ej. cada 0.1 horas).
-
-Gráfica Secundaria (Velocidad vs Tiempo - Solo Modo Sombra):
-
-Aparece únicamente cuando se procesan datos de sombras.
-
-Eje X: Tiempo. Eje Y: Velocidad (Tasa de cambio de la sombra, ej. cm/hora).
-
-Trazar la línea del polinomio derivado.
-
-Feature 5: Panel de Resultados y Generación de PDF
-
-Display de Ecuaciones: Renderizar en formato amigable (ej. usando estilos de texto monoespaciado o LaTeX/MathJax) el modelo obtenido: y = 1.2x^2 - 0.5x + 3. Si es sombra, mostrar también v = 2.4x - 0.5.
-
-Métricas: Mostrar tarjetas visuales con los valores de $R^2$ y $MSE$.
-
-Exportación: Un botón "Exportar a PDF" que, mediante CSS (@media print) y window.print(), o usando jsPDF, limpie la interfaz de botones y prepare un reporte estructurado de una página con la tabla de datos, las ecuaciones y las gráficas.
-
-🚀 Instrucciones para el Agente (Prompt Directives)
-
-Inicia por el Backend: Construye y prueba (con datos mock) la clase/servicio matemático (Eliminación de Gauss, Polinomio, Derivadas y Errores). Es el núcleo del proyecto.
-
-API Rest: Envuelve la lógica matemática en un controlador de Express.
-
-Frontend State: Usa Context API de React o un estado levantado (Lifting State Up) para manejar los datos de la tabla, de manera que la gráfica se actualice cuando los datos cambien.
-
-Resiliencia: Añade validación de datos en el frontend (ej. no permitir campos vacíos antes de enviar a calcular) y manejo de errores si la matriz resulta singular.
-
-Paginación/Estructura: Crea una UI limpia (layout dashboard) donde a la izquierda estén los controles y datos, y a la derecha los resultados y gráficas (ver Planeación_Proyecto_Solar.md para la maqueta inicial).
+---
+*Desarrollado para el módulo de Modelación Semestre 2026-1.*
